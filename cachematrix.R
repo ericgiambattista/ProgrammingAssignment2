@@ -10,16 +10,28 @@
 makeCacheMatrix <- function(x = matrix()) {
   m <- NULL
   set <- function(y) {
-         ## These assignment operators search through the parent environments
+         ## These assignment operator '<<-' search through the parent environments
          ## for an existing definition of x and m. If there is an existing 
          ## definition the value is redefined, otherwise assignment takes place
-         ## in the global environment.
+         ## in the global environment. As pointed out by Bill Hilton here:
+         ## https://class.coursera.org/rprog-009/forum/thread?thread_id=457
+         ## they are actually not necessary for the assignment, but I have kept them 
+         ## for possible later use.
          x <<- y
          m <<- NULL
   }
+  
+  ## Returns value of original matrix
   get <- function() x
+  
+  ## Store the value of the matrix inverse in the cache so it can be quickly accessed on 
+  ## subsequent references
   setinverse <- function(solve) m <<- solve
-  getinverse <- function() m
+  
+  ## Returns the cached value of the inverse to cacheSolve.R
+  getinverse <- function() m 
+  
+  ## Return values (list of 4 functions)
   list(set=set, get=get, setinverse = setinverse, getinverse=getinverse)
 }
 
@@ -29,17 +41,23 @@ makeCacheMatrix <- function(x = matrix()) {
 ### for future computations)
 
 cacheSolve <- function(x, ...) {
+  
   ## Return a matrix that is the inverse of 'x'
   m <- x$getinverse()
+  
   ## If the inverse has already been computed, get the cached inverse
   if(!is.null(m)) {
     message("getting cached inverse")
     return(m)
   }
+  
   ## If the inverse has not been computed, use makeCacheMatrix to cache the value
   ## of the matrix inverse to shorten future computation
+  ## First get the value of the matrix
   data <- x$get()
+  ## Solve for the matrix inverse
   m <- solve(data, ...)
+  ## Set the value of the inverse
   x$setinverse(m)
   m
 }
